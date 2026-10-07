@@ -3,13 +3,13 @@
 const projects = [
   {
     title: "Secure Static Portfolio Website on AWS",
-    status: "In Progress",
+    status: "Completed",
     summary:
       "This portfolio, served from a private S3 bucket through CloudFront and deployed automatically with GitHub Actions.",
     aws: ["S3", "CloudFront", "OAC", "IAM"],
     tech: ["HTML", "CSS", "JavaScript", "GitHub Actions (OIDC)"],
-    github: "",
-    demo: "",
+    github: "https://github.com/khalid33-i/aws-portfolio",
+    demo: "https://d2znb2lvgu973r.cloudfront.net",
     diagram:
       "User\n  |  HTTPS\n  v\nCloudFront  (cache, TLS)\n  |  Origin Access Control\n  v\nS3 bucket  (private, Block Public Access on)\n\nPlanned later with a custom domain: Route 53 + ACM",
     overview: "A static portfolio hosted on AWS without any servers to manage.",
@@ -19,7 +19,8 @@ const projects = [
       "The bucket is private with Block Public Access on. A bucket policy trusts only this CloudFront distribution. HTTP is redirected to HTTPS. The deploy pipeline signs in with a short-lived OIDC role, so no access keys are stored in GitHub.",
     scale:
       "CloudFront and S3 scale automatically and S3 stores data redundantly across Availability Zones.",
-    learned: "To be added when the project is complete.",
+    learned:
+      "Private S3 with CloudFront OAC, keyless deployment with GitHub Actions and OIDC, and how a small mismatch in an IAM trust condition blocks role assumption.",
   },
   {
     title: "Serverless Notes / Tasks API",
