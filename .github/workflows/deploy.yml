@@ -5,7 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# OIDC: GitHub gets a short-lived token, so no AWS access keys are stored.
 permissions:
   id-token: write
   contents: read
