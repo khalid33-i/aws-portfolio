@@ -58,25 +58,6 @@ const projects = [
     learned:
       "Private S3 with CloudFront OAC, keyless deployment with GitHub Actions and OIDC, and how a small mismatch in an IAM trust condition blocks role assumption.",
   },
-  {
-    title: "Serverless Notes / Tasks API",
-    status: "Planned",
-    summary:
-      "A REST API for notes built with API Gateway, Lambda and DynamoDB, with no servers to run.",
-    aws: ["API Gateway", "Lambda", "DynamoDB", "IAM", "CloudWatch"],
-    tech: ["REST", "JSON"],
-    github: "",
-    demo: "",
-    diagram:
-      "Client\n  |\n  v\nAPI Gateway\n  |\n  v\nLambda  --> CloudWatch (logs)\n  |\n  v\nDynamoDB\n\nRoutes: GET/POST /notes, GET/PUT/DELETE /notes/{id}",
-    overview: "A backend for creating, reading, updating and deleting notes.",
-    goal: "Learn serverless design and REST API basics.",
-    how: "API Gateway routes each request to a Lambda function, which reads or writes a DynamoDB table.",
-    security:
-      "Each Lambda gets an IAM role limited to the one table it needs. Authentication and throttling are planned.",
-    scale: "Lambda and DynamoDB scale with request volume.",
-    learned: "To be added when the project is complete.",
-  },
 ];
 
 const list = document.getElementById("project-list");
