@@ -1,6 +1,42 @@
-// Project data. Status stays "Planned" or "In Progress" until the project is actually finished.
+// Project data. Status is "Completed" only for work that is actually finished.
 // Links stay empty until real ones exist: nothing here claims work that is not done.
 const projects = [
+  {
+    title: "AWS Hospital Management System",
+    status: "Completed",
+    summary:
+      "A multi-tier hospital management platform (five user roles) deployed on AWS with Terraform, monitored with CloudWatch and released through a GitHub Actions CI/CD pipeline.",
+    aws: [
+      "VPC",
+      "ALB",
+      "EC2 Auto Scaling",
+      "RDS MySQL",
+      "S3",
+      "KMS",
+      "IAM",
+      "CloudWatch",
+      "SNS",
+      "CloudTrail",
+      "Systems Manager",
+      "Secrets Manager",
+    ],
+    tech: ["Terraform", "Docker", "GitHub Actions (OIDC)", "Node.js", "Express", "MySQL", "Linux"],
+    github: "https://github.com/khalid33-i/aws-hospital-management-system",
+    demo: "",
+    demoNote: "Demo: stopped to save cost",
+    diagram:
+      "User\n  |  HTTP\n  v\nApplication Load Balancer   (public subnets)\n  |  only from ALB security group\n  v\nEC2 Auto Scaling group      (private app subnets, no SSH)\n  |  only from app security group, TLS\n  v\nRDS MySQL 8.4              (isolated DB subnets, encrypted)\n\nSupport: S3 + KMS, Secrets Manager, CloudWatch + SNS, CloudTrail\nDeploy:  GitHub Actions --OIDC--> Auto Scaling instance refresh",
+    overview:
+      "A fictional hospital platform with Admin, Doctor, Receptionist, Pharmacist and Patient roles, built to practice real cloud infrastructure and DevOps. All data is fictional and it is not a certified clinical system.",
+    goal: "Design, deploy and document a secure three-tier environment on AWS, managed entirely as code.",
+    how: "Traffic flows from an Application Load Balancer to EC2 instances in private subnets, which connect to a private RDS MySQL database. The whole environment (7 Terraform modules) is created with terraform apply and removed with terraform destroy. A new instance configures itself from user data, creates the database schema and starts the app as a systemd service.",
+    security:
+      "A Security Group chain (ALB, application, database) instead of open ports. No SSH and no public IPs: servers are managed through Systems Manager Session Manager. IAM roles with least privilege, IMDSv2, KMS encryption, secrets in Secrets Manager and Parameter Store, S3 Block Public Access and CloudTrail auditing. GitHub deploys with a short-lived OIDC role, so no access keys are stored.",
+    scale:
+      "An Auto Scaling group across two Availability Zones replaces failed instances and scales on CPU. CloudWatch alarms with SNS email alerts watch CPU, memory, disk, load balancer health and database metrics.",
+    learned:
+      "Troubleshooting failing health checks from instance logs, IAM trust policies for GitHub OIDC (including the new subject claim format), reusing an existing OIDC provider with a Terraform data source, and keeping cloud costs under control by destroying the stack after documenting it.",
+  },
   {
     title: "Secure Static Portfolio Website on AWS",
     status: "Completed",
@@ -41,36 +77,6 @@ const projects = [
     scale: "Lambda and DynamoDB scale with request volume.",
     learned: "To be added when the project is complete.",
   },
-  {
-    title: "Scalable 3-Tier Web Application on AWS",
-    status: "Planned",
-    summary:
-      "A production-style web application across multiple Availability Zones with a load balancer, Auto Scaling and a private database.",
-    aws: [
-      "VPC",
-      "ALB",
-      "EC2",
-      "Auto Scaling",
-      "RDS MySQL",
-      "NAT Gateway",
-      "Security Groups",
-      "IAM",
-      "CloudWatch",
-    ],
-    tech: ["MySQL"],
-    github: "",
-    demo: "",
-    diagram:
-      "Internet\n  |\n  v\nApplication Load Balancer  (public subnets)\n  |  ALB security group\n  v\nEC2 Auto Scaling group  (private app subnets)\n  |  EC2 security group\n  v\nRDS MySQL  (private DB subnets)",
-    overview: "A three-tier application inside a custom VPC.",
-    goal: "Practice VPC design, security groups, load balancing, scaling and database isolation.",
-    how: "The load balancer receives traffic and forwards it to EC2 instances in private subnets. The instances connect to an RDS MySQL database in separate private subnets.",
-    security:
-      "Only the load balancer is public. Each tier accepts traffic only from the tier in front of it. The database is not publicly accessible.",
-    scale:
-      "Auto Scaling adds or removes instances, and resources span two Availability Zones.",
-    learned: "To be added when the project is complete.",
-  },
 ];
 
 const list = document.getElementById("project-list");
@@ -80,11 +86,16 @@ const el = (tag, text, cls) => {
   if (cls) e.className = cls;
   return e;
 };
+const pills = (items, cls) => {
+  const ul = el("ul", "", "pills" + (cls ? " " + cls : ""));
+  items.forEach((i) => ul.append(el("li", i)));
+  return ul;
+};
 
 function section(dlg, heading, text) {
   dlg.append(el("h4", heading), el("p", text));
 }
-function linkOrNote(parent, label, url) {
+function linkOrNote(parent, label, url, note) {
   if (url) {
     const a = el("a", label, "btn");
     a.href = url;
@@ -92,8 +103,7 @@ function linkOrNote(parent, label, url) {
     a.rel = "noopener";
     parent.append(a);
   } else {
-    const s = el("span", label + ": coming soon", "status");
-    parent.append(s);
+    parent.append(el("span", note || label + ": coming soon", "note"));
   }
 }
 
@@ -101,24 +111,20 @@ projects.forEach((p) => {
   const card = el("article", "", "project");
   card.dataset.status = p.status;
   const left = el("div");
-  left.append(
-    el("h3", p.title),
-    el("p", p.summary),
-    el("p", "AWS: " + p.aws.join(", "), "tags"),
-    el("p", "Tech: " + p.tech.join(", "), "tags"),
-  );
+  left.append(el("h3", p.title), el("p", p.summary), pills(p.aws), pills(p.tech, "tech"));
   const right = el("div", "", "row");
-  right.append(el("span", p.status, "status"));
+  right.append(el("span", p.status, "status " + (p.status === "Completed" ? "ok" : "plan")));
   linkOrNote(right, "GitHub", p.github);
-  linkOrNote(right, "Live demo", p.demo);
+  linkOrNote(right, "Live demo", p.demo, p.demoNote);
   const more = el("button", "View details", "btn");
+  more.type = "button";
   right.append(more);
   card.append(left, right);
   list.append(card);
 
   const dlg = el("dialog");
   dlg.setAttribute("aria-label", p.title);
-  dlg.append(el("h3", p.title), el("p", "Status: " + p.status, "status"));
+  dlg.append(el("h3", p.title), el("span", p.status, "status " + (p.status === "Completed" ? "ok" : "plan")));
   section(dlg, "Overview", p.overview);
   section(dlg, "Goal", p.goal);
   dlg.append(el("h4", "Architecture"), el("pre", p.diagram));
@@ -129,6 +135,7 @@ projects.forEach((p) => {
   section(dlg, "Technologies", p.tech.join(", "));
   section(dlg, "What I learned", p.learned);
   const close = el("button", "Close", "btn primary");
+  close.type = "button";
   close.addEventListener("click", () => dlg.close());
   dlg.append(close);
   document.body.append(dlg);
@@ -137,7 +144,3 @@ projects.forEach((p) => {
     if (e.target === dlg) dlg.close();
   });
 });
-
-document
-  .querySelectorAll("a[data-todo]")
-  .forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
